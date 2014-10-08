@@ -77,6 +77,10 @@ class java-development-env {
     ensure  => installed,
   }
 
+  exec { "update_apt_subversion":
+    command => "sh -c 'echo \"deb http://opensource.wandisco.com/ubuntu precise svn18\" >> /etc/apt/sources.list.d/subversion18.list'; wget -q http://opensource.wandisco.com/wandisco-debian.gpg -O- | sudo apt-key add -; apt-get update",
+  }
+
   user { "vagrant":
     ensure    => present,
     comment   => "Tomcat User",
