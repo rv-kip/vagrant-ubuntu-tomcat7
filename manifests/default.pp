@@ -136,21 +136,88 @@ class java-development-env {
     require   => Exec["extract_tomcat"],
   }
 
-  file { "/vagrant/tomcat/bin/setenv.sh":
-    ensure    => present,
-    owner     => "vagrant",
-    mode      => 0755,
-    content   => '#!/bin/sh
-export CATALINA_OPTS="$CATALINA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=1099 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=192.168.33.10"
-export CATALINA_OPTS="$CATALINA_OPTS -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n"
-echo "Using CATALINA_OPTS:"
-for arg in $CATALINA_OPTS
-do
-    echo ">> " $arg
-done
-echo ""',
-    require   => Exec["extract_tomcat"],
+  # Set up necessary symlinks
+  file { '/usr/tomcat':
+    ensure => 'link',
+    target => '/vagrant/tomcat',
   }
+  file { "/usr/java":
+    ensure => "directory",
+    owner  => "vagrant",
+    group  => "vagrant",
+    mode   => 755,
+  }
+
+  file { '/usr/java/bin':
+    ensure => 'link',
+    target => '/usr/bin',
+  }
+
+  file { '/root/.bashrc':
+    ensure => present,
+  }
+  file_line { 'Append a line to /root/.bashrc':
+    path => '/root/.bashrc',
+    line => 'export TOMCAT_HOME=/usr/tomcat',
+  }
+
+  file { '/home/vagrant/.bashrc':
+    ensure => present,
+  }
+  file_line { 'Append a line to /home/vagrant/.bashrc':
+    path => '/home/vagrant/.bashrc',
+    line => 'export TOMCAT_HOME=/usr/tomcat',
+  }
+
+  # Set up svn symlinks ahead of time
+    file { "/var/www":
+    ensure => "directory",
+    owner  => "root",
+    group  => "root",
+    mode   => 755,
+  }
+  file { "/var/www/j2ee":
+    ensure => "directory",
+    owner  => "root",
+    group  => "root",
+    mode   => 755,
+  }
+  file { '/var/www/j2ee/webapi':
+    ensure => 'link',
+    target => '/vagrant/webapi',
+  }
+  file { '/var/www/j2ee/kqed-new':
+    ensure => 'link',
+    target => '/vagrant/kqed-new',
+  }
+  file { '/var/www/j2ee/calreport':
+    ensure => 'link',
+    target => '/vagrant/calreport',
+  }
+  file { '/var/www/j2ee/simplecms':
+    ensure => 'link',
+    target => '/vagrant/simplecms',
+  }
+
+  # class { 'timezone':
+  #   timezone => 'Europe/Berlin',
+  # }
+
+#   file { "/vagrant/tomcat/bin/setenv.sh":
+#     ensure    => present,
+#     owner     => "vagrant",
+#     mode      => 0755,
+#     content   => '#!/bin/sh
+# export CATALINA_OPTS="$CATALINA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=1099 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=192.168.33.10"
+# export CATALINA_OPTS="$CATALINA_OPTS -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n"
+# echo "Using CATALINA_OPTS:"
+# for arg in $CATALINA_OPTS
+# do
+#     echo ">> " $arg
+# done
+# echo ""',
+#     require   => Exec["extract_tomcat"],
+#   }
 
   file { "/etc/supervisor/conf.d/tomcat.conf":
     ensure    => present,
